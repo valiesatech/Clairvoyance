@@ -137,3 +137,8 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Android build files
+android/app/build/
+android/build/
+android/app/.cxx/
