@@ -1,3 +1,6 @@
+// ─────────────────────────────────────────────
+// IMPORTS
+// ─────────────────────────────────────────────
 import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
@@ -15,13 +18,25 @@ import {
   ScrollView,
 } from 'react-native';
 import Tts from 'react-native-tts';
-const GROQ_API_KEY = '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';
 
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const GROQ_API_KEY = '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';
+const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL   = 'llama-3.3-70b-versatile';
+
+// ─────────────────────────────────────────────
+// NATIVE SPEECH BRIDGE (Kotlin → JS)
+// ─────────────────────────────────────────────
 const { SpeechModule } = NativeModules;
 const speechEmitter = SpeechModule
   ? new NativeEventEmitter(SpeechModule)
   : null;
 
+// ─────────────────────────────────────────────
+// PERMISSIONS
+// ─────────────────────────────────────────────
 async function requestAudioPermission(): Promise<boolean> {
   if (Platform.OS !== 'android') return true;
   const granted = await PermissionsAndroid.request(
@@ -36,11 +51,10 @@ async function requestAudioPermission(): Promise<boolean> {
   return granted === PermissionsAndroid.RESULTS.GRANTED;
 }
 
-async function askClaire(
-  userMessage: string,
-  cartItems: string[],
-): Promise<string> {
-
+// ─────────────────────────────────────────────
+// GROQ AI — CLAIRE'S BRAIN
+// ─────────────────────────────────────────────
+async function askClaire(userMessage: string, cartItems: string[]): Promise<string> {
   const cartContext = cartItems.length > 0
     ? `User's cart: ${cartItems.join(', ')}.`
     : 'Cart is empty.';
@@ -51,51 +65,56 @@ ${cartContext}
 Rules:
 - Keep responses to 1 sentence MAX, they will be spoken aloud.
 - Be warm, clear and friendly.
-- To add an item to cart, respond with ONLY: CART_ADD:[item name]
-- To remove an item from cart, respond with ONLY: CART_REMOVE:[item name]
+- If the user wants to add an item to the cart, respond with ONLY: CART_ADD:[item name]. Do NOT ask clarifying questions, just add it.
+- If the user wants to remove an item from the cart, respond with ONLY: CART_REMOVE:[item name].
 - Never add any other text before or after CART_ADD or CART_REMOVE commands.
-- If unsure what item the user wants, ask ONE short clarifying question.
-- Always confirm cart actions clearly.
+- Only ask a clarifying question if the request is completely ambiguous (e.g. user says "add it" with no prior context).
 - Never use markdown, bullet points or special characters.
 - Speak as if the listener cannot see anything.`;
 
-  const response = await fetch(
-    'https://api.groq.com/openai/v1/chat/completions',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-        max_tokens: 100,
-        temperature: 0.7,
-      }),
+  const response = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
     },
-  );
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userMessage  },
+      ],
+      max_tokens: 100,
+      temperature: 0.3,
+    }),
+  });
 
   const data = await response.json();
   console.log('Groq response:', JSON.stringify(data));
 
-  const text = data?.choices?.[0]?.message?.content?.trim();
-  return text || "I'm sorry, I didn't catch that. Please try again.";
+  return data?.choices?.[0]?.message?.content?.trim()
+    || "I'm sorry, I didn't catch that. Please try again.";
 }
 
+// ─────────────────────────────────────────────
+// APP
+// ─────────────────────────────────────────────
 function App() {
 
-  const [isListening, setIsListening]       = useState(false);
-  const [isThinking, setIsThinking]         = useState(false);
+  // --- State ---
+  const [isListening,    setIsListening]    = useState(false);
+  const [isThinking,     setIsThinking]     = useState(false);
   const [recognizedText, setRecognizedText] = useState('');
-  const [cart, setCart]                     = useState<string[]>([]);
+  const [cart,           setCart]           = useState<string[]>([]);
+  const [pendingItem,    setPendingItem]     = useState<string | null>(null);
 
-  const cartRef = useRef<string[]>([]);
-  cartRef.current = cart;
+  // Refs so event listeners always see latest values
+  const cartRef    = useRef<string[]>([]);
+  const pendingRef = useRef<string | null>(null);
+  cartRef.current    = cart;
+  pendingRef.current = pendingItem;
 
+  // --- TTS + Speech Listener Setup ---
   useEffect(() => {
     Tts.getInitStatus()
       .then(() => {
@@ -110,33 +129,29 @@ function App() {
 
     if (!speechEmitter) return;
 
-    const resultSub = speechEmitter.addListener(
-      'onSpeechResult',
-      (text: string) => {
-        setRecognizedText(text);
-        setIsListening(false);
-        handleVoiceCommand(text);
-      },
-    );
+    const resultSub = speechEmitter.addListener('onSpeechResult', (text: string) => {
+      setRecognizedText(text);
+      setIsListening(false);
+      handleVoiceCommand(text);
+    });
 
-    const errorSub = speechEmitter.addListener(
-      'onSpeechError',
-      (error: string) => {
-        console.warn('Speech error:', error);
-        setIsListening(false);
-        setRecognizedText('');
-      },
-    );
+    const errorSub = speechEmitter.addListener('onSpeechError', (error: string) => {
+      console.warn('Speech error:', error);
+      setIsListening(false);
+      setRecognizedText('');
+    });
 
     return () => {
       resultSub.remove();
       errorSub.remove();
       Tts.stop();
     };
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ─────────────────────────────────────────────
+  // CART ACTIONS
+  // ─────────────────────────────────────────────
   const addToCart = (item: string) => {
     setCart(prev => {
       const updated = [...prev, item];
@@ -158,25 +173,64 @@ function App() {
     });
   };
 
-  const detectObject = () => Tts.speak('Scanning. Please hold your camera steady.');
-  const readLabel = () => Tts.speak('Reading label. Please point your camera at the product.');
-  const navigateTo = (destination: string) => Tts.speak(`Navigating to ${destination}. Please follow the audio cues.`);
+  // ─────────────────────────────────────────────
+  // TEAMMATE STUBS
+  // Member 2 — call detectObject() when object is identified
+  // Member 3 — call readLabel('Product Name, $price') when label is scanned
+  // Member 1 — call navigateTo('produce section') for navigation
+  // ─────────────────────────────────────────────
+  const detectObject = () =>
+    Tts.speak('Scanning. Please hold your camera steady.');
 
+  const readLabel = (productName?: string) => {
+    if (productName) {
+      // Member 3 passes in scanned product — Claire asks user to confirm
+      setPendingItem(productName);
+      pendingRef.current = productName;
+      Tts.speak(`I found ${productName}. Would you like to add this to your cart? Say yes or no.`);
+    } else {
+      Tts.speak('Reading label. Please point your camera at the product.');
+    }
+  };
+
+  const navigateTo = (destination: string) =>
+    Tts.speak(`Navigating to ${destination}. Please follow the audio cues.`);
+
+  // ─────────────────────────────────────────────
+  // VOICE COMMAND HANDLER
+  // ─────────────────────────────────────────────
   const handleVoiceCommand = async (text: string) => {
     const lower = text.toLowerCase();
 
+    // 1. Handle yes/no confirmation for pending item
+    if (pendingRef.current) {
+      if (lower.includes('yes') || lower.includes('yeah') || lower.includes('yep') || lower.includes('sure')) {
+        addToCart(pendingRef.current);
+        setPendingItem(null);
+        return;
+      }
+      if (lower.includes('no') || lower.includes('nope') || lower.includes('cancel')) {
+        Tts.speak('Okay, nothing added.');
+        setPendingItem(null);
+        return;
+      }
+    }
+
+    // 2. Object detection trigger
     if (lower.includes('what is this') || lower.includes('identify') ||
-        lower.includes('detect') || lower.includes('scan') ||
+        lower.includes('detect')       || lower.includes('scan')     ||
         lower.includes('what am i holding')) {
       detectObject(); return;
     }
 
+    // 3. Label reading trigger
     if (lower.includes('read the label') || lower.includes('read label') ||
-        lower.includes('ingredients') || lower.includes('expiry') ||
+        lower.includes('ingredients')    || lower.includes('expiry')     ||
         lower.includes('expiration')) {
       readLabel(); return;
     }
 
+    // 4. Navigation trigger
     if (lower.includes('take me') || lower.includes('navigate') ||
         lower.includes('where is') || lower.includes('go to')) {
       const match = lower.match(/(?:take me to|navigate to|where is|go to)\s+(.+)/);
@@ -184,15 +238,17 @@ function App() {
       return;
     }
 
+    // 5. Clear cart
     if (lower.includes('clear cart') || lower.includes('empty cart')) {
       setCart([]);
       Tts.speak('Your cart has been cleared.');
       return;
     }
 
+    // 6. Read cart
     if ((lower.includes('what') && lower.includes('cart')) ||
-        lower.includes('my cart') || lower.includes('whats in') ||
-        lower.includes('show cart') || lower.includes('list cart')) {
+        lower.includes('my cart')    || lower.includes('whats in') ||
+        lower.includes('show cart')  || lower.includes('list cart')) {
       const current = cartRef.current;
       Tts.speak(
         current.length === 0
@@ -202,22 +258,30 @@ function App() {
       return;
     }
 
+    // 7. Count cart items
     if (lower.includes('how many') || lower.includes('count')) {
       const count = cartRef.current.length;
       Tts.speak(`You have ${count} item${count !== 1 ? 's' : ''} in your cart.`);
       return;
     }
 
+    // 8. Everything else — send to Groq AI
     setIsThinking(true);
     Tts.speak('Let me think...');
 
     try {
       const reply = await askClaire(text, cartRef.current);
+
       if (reply.startsWith('CART_ADD:')) {
-        const rawItem = reply.replace('CART_ADD:', '').split('\n')[0].trim();
-        addToCart(rawItem.split(',')[0].trim());
+        // Don't add directly — ask user to confirm first
+        const item = reply.replace('CART_ADD:', '').split('\n')[0].trim().split(',')[0].trim();
+        setPendingItem(item);
+        pendingRef.current = item;
+        Tts.speak(`Do you want ${item} added to your cart?`);
+
       } else if (reply.startsWith('CART_REMOVE:')) {
         removeFromCart(reply.replace('CART_REMOVE:', '').split('\n')[0].trim());
+
       } else {
         Tts.speak(reply);
       }
@@ -229,6 +293,9 @@ function App() {
     }
   };
 
+  // ─────────────────────────────────────────────
+  // MIC BUTTON HANDLER
+  // ─────────────────────────────────────────────
   const toggleListening = async () => {
     try {
       if (isListening) {
@@ -257,20 +324,28 @@ function App() {
     }
   };
 
+  // ─────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.background}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
+
         <Text style={styles.title}>CLAIRVOYANCE</Text>
         <Text style={styles.tagline}>Your AI Shopping Assistant</Text>
+
         <Text style={styles.status}>
-          {isThinking  ? 'Claire is thinking...' :
-           isListening ? 'Claire is listening...' :
-           'Claire is ready.'}
+          {isThinking  ? 'Claire is thinking...'       :
+           isListening ? 'Claire is listening...'      :
+           pendingItem ? 'Waiting for confirmation...' :
+                         'Claire is ready.'}
         </Text>
+
         <View style={styles.speechBox}>
           <Text style={styles.speechText}>{recognizedText}</Text>
         </View>
+
         <View style={styles.cartBox}>
           <Text style={styles.cartTitle}>🛒 Cart ({cart.length} items)</Text>
           <ScrollView style={styles.cartScroll}>
@@ -282,22 +357,31 @@ function App() {
             }
           </ScrollView>
         </View>
+
         <TouchableOpacity
-          style={[styles.button, isListening && styles.buttonRed, isThinking && styles.buttonOrange]}
+          style={[
+            styles.button,
+            isListening && styles.buttonRed,
+            isThinking  && styles.buttonOrange,
+          ]}
           onPress={toggleListening}
           disabled={isThinking}
         >
           <Text style={styles.buttonText}>
             {isThinking  ? 'Claire is thinking...' :
-             isListening ? 'Stop Listening' :
-             'Talk to Claire'}
+             isListening ? 'Stop Listening'        :
+                           'Talk to Claire'}
           </Text>
         </TouchableOpacity>
+
       </View>
     </SafeAreaView>
   );
 }
 
+// ─────────────────────────────────────────────
+// STYLES
+// ─────────────────────────────────────────────
 const styles = StyleSheet.create({
   background:   { flex: 1, backgroundColor: '#F3F3F3' },
   container:    { flex: 1, alignItems: 'center', padding: 20, paddingTop: 40 },
