@@ -238,11 +238,11 @@
 	[
 		{
 			"backtrace" : 4,
-			"id" : "react_codegen_safeareacontext::@7984cd80db47aa7b952a"
+			"id" : "react_codegen_RNHapticFeedbackSpec::@a83561f277f6afbb326c"
 		},
 		{
 			"backtrace" : 4,
-			"id" : "react_codegen_RNHapticFeedbackSpec::@a83561f277f6afbb326c"
+			"id" : "react_codegen_safeareacontext::@7984cd80db47aa7b952a"
 		}
 	],
 	"id" : "appmodules::@6890427a1f51a3e7e1df",

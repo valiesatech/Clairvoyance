@@ -1,13 +1,13 @@
 # ninja log v5
-4	30	0	C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/cmake.verify_globs	3c588b1d4c3d06ae
-60	3123	7952896345659720	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/States.cpp.o	ee5786cfdfa3a389
 154	3676	7952896351365370	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/1216742df80805095f850b2803f32c17/renderer/components/safeareacontext/States.cpp.o	fba0eb1f02b8ee42
-42	4102	7952896355515570	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/EventEmitters.cpp.o	b7661019e629621d
-84	4453	7952896359112389	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/8055763d498362beb7df9b07c9ca5633/components/safeareacontext/EventEmitters.cpp.o	2fcfccc831f2c300
-15	5485	7952896369419181	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/RNHapticFeedbackSpec-generated.cpp.o	9bbe75a693d78ee
-51	5561	7952896370195395	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/ShadowNodes.cpp.o	40aaad795db5d66c
+9	57	0	C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/cmake.verify_globs	3c588b1d4c3d06ae
 34	5802	7952896372527842	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/Props.cpp.o	f645e4ba22e905c2
+15	5485	7952896369419181	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/RNHapticFeedbackSpec-generated.cpp.o	9bbe75a693d78ee
+60	3123	7952896345659720	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/States.cpp.o	ee5786cfdfa3a389
+84	4453	7952896359112389	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/8055763d498362beb7df9b07c9ca5633/components/safeareacontext/EventEmitters.cpp.o	2fcfccc831f2c300
+42	4102	7952896355515570	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/EventEmitters.cpp.o	b7661019e629621d
 24	5935	7952896373867543	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/ComponentDescriptors.cpp.o	22552043f50b2b1f
+51	5561	7952896370195395	RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir/react/renderer/components/RNHapticFeedbackSpec/ShadowNodes.cpp.o	40aaad795db5d66c
 139	5944	7952896373965913	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/e6c686e0197cf04cdd9050dca5a4bdbb/source/codegen/jni/safeareacontext-generated.cpp.o	89cda58452e8e386
 1	6140	7952896376007975	CMakeFiles/appmodules.dir/OnLoad.cpp.o	49b57078c480d5d9
 94	6485	7952896379481360	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/8543c32342b878084adebcd11ae8320a/safeareacontext/RNCSafeAreaViewState.cpp.o	189582ccf351c194
@@ -18,4 +18,8 @@
 7694	7839	7952896393095156	C:/Users/Valie/Hackathon/Clairvoyance/android/app/build/intermediates/cxx/RelWithDebInfo/5y333l25/obj/x86_64/libreact_codegen_safeareacontext.so	82006a93d6b7c498
 7	8424	7952896398776994	CMakeFiles/appmodules.dir/C_/Users/Valie/Hackathon/Clairvoyance/android/app/build/generated/autolinking/src/main/jni/autolinking.cpp.o	99ce7d76dc9d0976
 8424	8533	7952896400041286	C:/Users/Valie/Hackathon/Clairvoyance/android/app/build/intermediates/cxx/RelWithDebInfo/5y333l25/obj/x86_64/libappmodules.so	95ceabd0f866eec6
-2	32	0	C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/cmake.verify_globs	3c588b1d4c3d06ae
+57	882	7953034219443499	build.ninja	3c12e897f036e858
+2	45	0	C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/cmake.verify_globs	3c588b1d4c3d06ae
+26	5127	7953034271478732	CMakeFiles/appmodules.dir/OnLoad.cpp.o	49b57078c480d5d9
+44	8093	7953034300944068	CMakeFiles/appmodules.dir/C_/Users/Valie/Hackathon/Clairvoyance/android/app/build/generated/autolinking/src/main/jni/autolinking.cpp.o	99ce7d76dc9d0976
+8094	8309	7953034303312576	C:/Users/Valie/Hackathon/Clairvoyance/android/app/build/intermediates/cxx/RelWithDebInfo/5y333l25/obj/x86_64/libappmodules.so	95ceabd0f866eec6

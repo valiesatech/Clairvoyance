@@ -11,7 +11,7 @@
 						1,
 						2
 					],
-					"jsonFile" : "directory-.-RelWithDebInfo-d0094a50bb2071803777.json",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13"
@@ -25,7 +25,7 @@
 				},
 				{
 					"build" : "RNHapticFeedbackSpec_autolinked_build",
-					"jsonFile" : "directory-RNHapticFeedbackSpec_autolinked_build-RelWithDebInfo-64865fd27261a440c7dc.json",
+					"jsonFile" : "directory-RNHapticFeedbackSpec_autolinked_build-Debug-64865fd27261a440c7dc.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13"
@@ -40,7 +40,7 @@
 				},
 				{
 					"build" : "safeareacontext_autolinked_build",
-					"jsonFile" : "directory-safeareacontext_autolinked_build-RelWithDebInfo-3441950d595249005749.json",
+					"jsonFile" : "directory-safeareacontext_autolinked_build-Debug-3441950d595249005749.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13"
@@ -54,7 +54,7 @@
 					]
 				}
 			],
-			"name" : "RelWithDebInfo",
+			"name" : "Debug",
 			"projects" : 
 			[
 				{
@@ -78,21 +78,21 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "appmodules::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-appmodules-RelWithDebInfo-f4bb16cde66fd8f43a9a.json",
+					"jsonFile" : "target-appmodules-Debug-91f22634ef8004b8d62b.json",
 					"name" : "appmodules",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 1,
 					"id" : "react_codegen_RNHapticFeedbackSpec::@a83561f277f6afbb326c",
-					"jsonFile" : "target-react_codegen_RNHapticFeedbackSpec-RelWithDebInfo-16d6618377b43b55b027.json",
+					"jsonFile" : "target-react_codegen_RNHapticFeedbackSpec-Debug-f680a97b3a60131ff702.json",
 					"name" : "react_codegen_RNHapticFeedbackSpec",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 2,
 					"id" : "react_codegen_safeareacontext::@7984cd80db47aa7b952a",
-					"jsonFile" : "target-react_codegen_safeareacontext-RelWithDebInfo-3e084962afadb51f0413.json",
+					"jsonFile" : "target-react_codegen_safeareacontext-Debug-0ad682e8707eba606136.json",
 					"name" : "react_codegen_safeareacontext",
 					"projectIndex" : 0
 				}
@@ -102,7 +102,7 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/arm64-v8a",
+		"build" : "C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/Debug/45242717/arm64-v8a",
 		"source" : "C:/Users/Valie/Hackathon/Clairvoyance/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup"
 	},
 	"version" : 
