@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   Vibration,
   StatusBar,
@@ -27,7 +26,28 @@ import Tts from 'react-native-tts';
 const GROQ_API_KEY = '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';
 const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL   = 'llama-3.3-70b-versatile';
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// ─────────────────────────────────────────────
+// THEME — Blue + Cyan, Light Mode
+// ─────────────────────────────────────────────
+const C = {
+  primary:       '#0066FF',
+  primaryLight:  '#4D94FF',
+  cyan:          '#00D4FF',
+  cyanLight:     '#E0F7FF',
+  cyanGlow:      'rgba(0, 212, 255, 0.3)',
+  bg:            '#F0F8FF',
+  surface:       '#FFFFFF',
+  surfaceBorder: 'rgba(0, 102, 255, 0.15)',
+  overlay:       'rgba(255, 255, 255, 0.92)',
+  textHigh:      '#0A1628',
+  textMid:       '#4A6080',
+  textLow:       '#8AA0B8',
+  red:           '#FF3B30',
+  orange:        '#FF9500',
+  white:         '#FFFFFF',
+};
 
 // ─────────────────────────────────────────────
 // NATIVE SPEECH BRIDGE (Kotlin → JS)
@@ -142,10 +162,11 @@ function App() {
 
   // Animations
   const pulseAnim    = useRef(new Animated.Value(1)).current;
-  const borderAnim   = useRef(new Animated.Value(0)).current;
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const cornerAnim   = useRef(new Animated.Value(0)).current;
   const cartAnim     = useRef(new Animated.Value(0)).current;
+  const glowAnim     = useRef(new Animated.Value(0)).current;
+  const waveAnim     = useRef(new Animated.Value(1)).current;
 
   // --- Scanning animation ---
   useEffect(() => {
@@ -170,26 +191,34 @@ function App() {
     }
   }, [isScanning]);
 
-  // --- Button pulse when listening ---
+  // --- Button pulse + wave when listening ---
   useEffect(() => {
     if (isListening) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.05, duration: 600, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1,    duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.04, duration: 700, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1,    duration: 700, useNativeDriver: true }),
         ])
       ).start();
       Animated.loop(
         Animated.sequence([
-          Animated.timing(borderAnim, { toValue: 1, duration: 800, useNativeDriver: false }),
-          Animated.timing(borderAnim, { toValue: 0, duration: 800, useNativeDriver: false }),
+          Animated.timing(waveAnim, { toValue: 1.18, duration: 900, useNativeDriver: true }),
+          Animated.timing(waveAnim, { toValue: 1,    duration: 900, useNativeDriver: true }),
+        ])
+      ).start();
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, { toValue: 1, duration: 900, useNativeDriver: false }),
+          Animated.timing(glowAnim, { toValue: 0, duration: 900, useNativeDriver: false }),
         ])
       ).start();
     } else {
       pulseAnim.stopAnimation();
-      borderAnim.stopAnimation();
-      Animated.timing(pulseAnim,  { toValue: 1, duration: 200, useNativeDriver: true  }).start();
-      Animated.timing(borderAnim, { toValue: 0, duration: 200, useNativeDriver: false }).start();
+      waveAnim.stopAnimation();
+      glowAnim.stopAnimation();
+      Animated.timing(pulseAnim, { toValue: 1, duration: 200, useNativeDriver: true  }).start();
+      Animated.timing(waveAnim,  { toValue: 1, duration: 200, useNativeDriver: true  }).start();
+      Animated.timing(glowAnim,  { toValue: 0, duration: 200, useNativeDriver: false }).start();
     }
   }, [isListening]);
 
@@ -273,28 +302,18 @@ function App() {
   // │  When you have a result, call:                          │
   // │    setPendingItem(detectedItemName)                     │
   // │    setIsScanning(false)                                 │
-  // │    Tts.speak(`I found ${result}. Add to cart?`)         │
   // └─────────────────────────────────────────────────────────┘
   const detectObject = () => {
     setIsScanning(true);
     Tts.speak('Scanning. Please hold your camera steady.');
     // TODO — Member 2: replace with real detection logic
-    // Example:
-    // const result = await ObjectDetector.detect();
-    // setIsScanning(false);
-    // if (result) {
-    //   setPendingItem(result);
-    //   pendingRef.current = result;
-    //   Tts.speak(`I found ${result}. Would you like to add this to your cart? Say yes or no.`);
-    // }
     setTimeout(() => setIsScanning(false), 3000);
   };
 
   // ┌─────────────────────────────────────────────────────────┐
   // │  MEMBER 3 — LABEL / TEXT READER                         │
   // │  Call readLabel('Product Name, $price') from your       │
-  // │  module when a label is scanned. Claire handles         │
-  // │  the confirmation flow automatically.                   │
+  // │  module when a label is scanned.                        │
   // └─────────────────────────────────────────────────────────┘
   const readLabel = (productName?: string) => {
     if (productName) {
@@ -306,9 +325,6 @@ function App() {
       setIsScanning(true);
       Tts.speak('Reading label. Please point your camera at the product.');
       // TODO — Member 3: trigger your label scan here
-      // Example:
-      // const result = await LabelReader.scan();
-      // if (result) readLabel(result);
       setTimeout(() => setIsScanning(false), 3000);
     }
   };
@@ -316,15 +332,11 @@ function App() {
   // ┌─────────────────────────────────────────────────────────┐
   // │  MEMBER 1 — NAVIGATION                                  │
   // │  Replace stub with your spatial navigation logic.       │
-  // │  Destination string comes from Claire's voice parser.   │
-  // │  Also called when user says "done shopping" to guide    │
-  // │  them to the cashier.                                   │
+  // │  Also called when user says "done shopping".            │
   // └─────────────────────────────────────────────────────────┘
   const navigateTo = (destination: string) => {
     Tts.speak(`Navigating to ${destination}. Please follow the audio cues.`);
-    // TODO — Member 1: add your spatial navigation logic here
-    // Example:
-    // Navigation.guideTo(destination);
+    // TODO — Member 1: Navigation.guideTo(destination);
   };
 
   // ─────────────────────────────────────────────
@@ -333,7 +345,7 @@ function App() {
   const handleVoiceCommand = async (text: string) => {
     const lower = text.toLowerCase();
 
-    // 1. Handle yes/no confirmation for pending item
+    // 1. Yes/no confirmation
     if (pendingRef.current) {
       if (lower.includes('yes') || lower.includes('yeah') || lower.includes('yep') || lower.includes('sure')) {
         addToCart(pendingRef.current);
@@ -347,21 +359,21 @@ function App() {
       }
     }
 
-    // 2. Object detection — routes to Member 2
+    // 2. Object detection — Member 2
     if (lower.includes('what is this') || lower.includes('identify') ||
         lower.includes('detect')       || lower.includes('scan')     ||
         lower.includes('what am i holding')) {
       detectObject(); return;
     }
 
-    // 3. Label reading — routes to Member 3
+    // 3. Label reading — Member 3
     if (lower.includes('read the label') || lower.includes('read label') ||
         lower.includes('ingredients')    || lower.includes('expiry')     ||
         lower.includes('expiration')) {
       readLabel(); return;
     }
 
-    // 4. Navigation — routes to Member 1
+    // 4. Navigation — Member 1
     if (lower.includes('take me') || lower.includes('navigate') ||
         lower.includes('where is') || lower.includes('go to')) {
       const match = lower.match(/(?:take me to|navigate to|where is|go to)\s+(.+)/);
@@ -397,7 +409,7 @@ function App() {
       return;
     }
 
-    // 8. Done shopping — confirm and direct to cashier
+    // 8. Done shopping — cashier
     if (lower.includes('done shopping')    || lower.includes('finished shopping') ||
         lower.includes('checkout')         || lower.includes('check out')         ||
         lower.includes('pay now')          || lower.includes('go to cashier')     ||
@@ -411,21 +423,17 @@ function App() {
           `Let me guide you to the cashier. Please follow the audio cues.`
         );
         // ┌─────────────────────────────────────────────────────────┐
-        // │  MEMBER 1 — Navigate to cashier on done shopping        │
-        // │  e.g. Navigation.guideTo('cashier');                    │
+        // │  MEMBER 1 — Navigate to cashier                         │
         // └─────────────────────────────────────────────────────────┘
         navigateTo('cashier');
       }
       return;
     }
 
-    // 9. Everything else — Groq AI
+    // 9. Groq AI — no filler speech
     setIsThinking(true);
-    Tts.speak('Let me think...');
-
     try {
       const reply = await askClaire(text, cartRef.current);
-
       if (reply.startsWith('CART_ADD:')) {
         const item = reply.replace('CART_ADD:', '').split('\n')[0].trim().split(',')[0].trim();
         setPendingItem(item);
@@ -445,7 +453,7 @@ function App() {
   };
 
   // ─────────────────────────────────────────────
-  // MIC BUTTON
+  // MIC TOGGLE
   // ─────────────────────────────────────────────
   const toggleListening = async () => {
     try {
@@ -465,7 +473,7 @@ function App() {
       }
       Tts.stop();
       Vibration.vibrate([0, 100, 50, 100]);
-      setRecognizedText('Listening...');
+      setRecognizedText('');
       setIsListening(true);
       SpeechModule.startListening();
     } catch (e: any) {
@@ -478,40 +486,35 @@ function App() {
   // ─────────────────────────────────────────────
   // DERIVED VALUES
   // ─────────────────────────────────────────────
-  const borderColor = borderAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: ['rgba(245,166,35,0.6)', 'rgba(255,107,0,1)'],
-  });
-
   const cornerOpacity = cornerAnim.interpolate({
     inputRange:  [0, 1],
-    outputRange: [0.6, 1],
+    outputRange: [0.5, 1],
   });
 
   const scanLineY = scanLineAnim.interpolate({
     inputRange:  [0, 1],
-    outputRange: [0, SCREEN_HEIGHT * 0.55],
+    outputRange: [0, SCREEN_HEIGHT * 0.52],
   });
 
   const cartHeight = cartAnim.interpolate({
     inputRange:  [0, 1],
-    outputRange: [0, 120],
+    outputRange: [0, 130],
   });
 
   const statusText =
-    isScanning  ? '⬡ Scanning...'                                      :
-    isThinking  ? '✦ Claire is thinking...'                             :
-    isListening ? '◉ Claire is listening...'                            :
-    pendingItem ? `Add "${pendingItem}" to cart? Say yes or no.`        :
-                  'Double tap to talk to Claire';
+    isScanning  ? 'Scanning...'                                  :
+    isThinking  ? 'Processing...'                                :
+    isListening ? 'Claire is listening...'                       :
+    pendingItem ? `Add "${pendingItem}" to cart?`                :
+                  'Tap anywhere to talk to Claire';
 
   const buttonColor =
-    isListening ? '#FF3B30' :
-    isThinking  ? '#FF9500' :
-                  '#F5A623';
+    isListening ? C.red     :
+    isThinking  ? C.orange  :
+                  C.primary;
 
   const buttonLabel =
-    isThinking  ? 'Thinking...'    :
+    isThinking  ? 'Processing...'  :
     isListening ? 'Stop Listening' :
                   'Talk to Claire';
 
@@ -519,8 +522,17 @@ function App() {
   // RENDER
   // ─────────────────────────────────────────────
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <TouchableOpacity
+      style={styles.root}
+      onPress={toggleListening}
+      disabled={isThinking}
+      activeOpacity={1}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={buttonLabel}
+      accessibilityHint="Double tap anywhere to start or stop listening"
+    >
+      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
 
       {/* ════════════════════════════════════════
           FULL BLEED CAMERA
@@ -538,6 +550,33 @@ function App() {
       </View>
 
       {/* ════════════════════════════════════════
+          TOP BAR — floats over camera
+          ════════════════════════════════════════ */}
+      <View style={styles.topBar} pointerEvents="none">
+        <View>
+          <Text style={styles.appName}>CLAIRVOYANCE</Text>
+          <Text style={styles.appTagline}>AI Shopping Assistant</Text>
+        </View>
+        {/* Status badge — top right, separate from app name */}
+        {(isListening || isScanning) && (
+          <View style={[
+            styles.badge,
+            isListening && styles.badgeListening,
+            isScanning  && styles.badgeScanning,
+          ]}>
+            <View style={[
+              styles.badgeDot,
+              isListening && styles.badgeDotRed,
+              isScanning  && styles.badgeDotCyan,
+            ]} />
+            <Text style={styles.badgeText}>
+              {isScanning ? 'SCANNING' : 'LISTENING'}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* ════════════════════════════════════════
           SCANNING OVERLAY
           ════════════════════════════════════════ */}
       {isScanning && (
@@ -547,52 +586,42 @@ function App() {
           <Animated.View style={[styles.corner, styles.cornerTR, { opacity: cornerOpacity }]} />
           <Animated.View style={[styles.corner, styles.cornerBL, { opacity: cornerOpacity }]} />
           <Animated.View style={[styles.corner, styles.cornerBR, { opacity: cornerOpacity }]} />
-          <View style={styles.scanningBadge}>
-            <View style={styles.scanDot} />
-            <Text style={styles.scanBadgeText}>SCANNING</Text>
-          </View>
-        </View>
-      )}
-
-      {/* LISTENING badge */}
-      {isListening && !isScanning && (
-        <View style={styles.listeningBadge} pointerEvents="none">
-          <View style={styles.listeningDot} />
-          <Text style={styles.listeningBadgeText}>LISTENING</Text>
         </View>
       )}
 
       {/* ════════════════════════════════════════
-          BOTTOM OVERLAY
+          BOTTOM PANEL
           ════════════════════════════════════════ */}
-      <View style={styles.bottomOverlay} pointerEvents="box-none">
+      <View style={styles.bottomPanel} pointerEvents="box-none">
 
-        {/* App name */}
-        <View style={styles.topBar}>
-          <Text style={styles.appName}>CLAIRVOYANCE</Text>
-          <Text style={styles.appTagline}>AI Shopping Assistant</Text>
+        {/* Status row */}
+        <View style={styles.statusRow}>
+          {isListening && (
+            <Animated.View style={[styles.listeningRing, { transform: [{ scale: waveAnim }] }]} />
+          )}
+          <Text
+            style={[
+              styles.statusText,
+              isListening && styles.statusListening,
+              isScanning  && styles.statusScanning,
+              pendingItem && styles.statusPending,
+            ]}
+            accessibilityLabel={statusText}
+            accessibilityLiveRegion="polite"
+          >
+            {statusText}
+          </Text>
         </View>
 
-        {/* Status */}
-        <Text
-          style={[
-            styles.statusText,
-            isListening && styles.statusListening,
-            isScanning  && styles.statusScanning,
-            pendingItem && styles.statusPending,
-          ]}
-          accessibilityLabel={statusText}
-          accessibilityLiveRegion="polite"
-        >
-          {statusText}
-        </Text>
-
         {/* Recognized speech */}
-        {recognizedText !== '' && recognizedText !== 'Listening...' && (
+        {recognizedText !== '' && (
           <Text style={styles.recognizedText}>"{recognizedText}"</Text>
         )}
 
-        {/* Cart (collapsible) */}
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Cart */}
         <TouchableOpacity
           style={styles.cartHeader}
           onPress={() => setCartExpanded(v => !v)}
@@ -609,18 +638,21 @@ function App() {
         </TouchableOpacity>
 
         <Animated.View style={[styles.cartBody, { height: cartHeight }]}>
-          <ScrollView style={styles.cartScroll} accessibilityLabel={`Cart contains ${cart.length} items`}>
+          <ScrollView style={styles.cartScroll}>
             {cart.length === 0
               ? <Text style={styles.cartEmpty}>Your cart is empty</Text>
               : cart.map((item, i) => (
-                  <Text key={i} style={styles.cartItem}>• {item}</Text>
+                  <View key={i} style={styles.cartRow}>
+                    <View style={styles.cartDot} />
+                    <Text style={styles.cartItem}>{item}</Text>
+                  </View>
                 ))
             }
           </ScrollView>
         </Animated.View>
 
-        {/* Talk to Claire Button */}
-        <Animated.View style={{ transform: [{ scale: pulseAnim }], marginTop: 12 }}>
+        {/* Button */}
+        <Animated.View style={{ transform: [{ scale: pulseAnim }], marginTop: 14 }}>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: buttonColor }]}
             onPress={toggleListening}
@@ -635,7 +667,7 @@ function App() {
         </Animated.View>
 
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -645,13 +677,13 @@ function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: C.bg,
   },
 
-  // Camera
+  // ── Camera ──
   cameraFullBleed: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0d0d0d',
+    backgroundColor: '#D6EEFF',
   },
   cameraPlaceholder: {
     flex: 1,
@@ -659,138 +691,183 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cameraIcon:  { fontSize: 52, marginBottom: 10 },
-  cameraLabel: { color: '#444', fontSize: 17, fontWeight: '600', letterSpacing: 1 },
-  cameraSub:   { color: '#2a2a2a', fontSize: 11, marginTop: 6, letterSpacing: 0.5 },
+  cameraLabel: { color: '#90B8D8', fontSize: 17, fontWeight: '600', letterSpacing: 1 },
+  cameraSub:   { color: '#B8D4E8', fontSize: 11, marginTop: 6, letterSpacing: 0.5 },
 
-  // Scan line
+  // ── Top bar ──
+  topBar: {
+    position: 'absolute',
+    top: 52,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  appName: {
+    color: C.textHigh,
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 3,
+  },
+  appTagline: {
+    color: C.primary,
+    fontSize: 10,
+    letterSpacing: 2,
+    marginTop: 2,
+    fontWeight: '600',
+  },
+
+  // ── Badge (top right) ──
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    gap: 6,
+  },
+  badgeListening: {
+    backgroundColor: 'rgba(255,59,48,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,59,48,0.3)',
+  },
+  badgeScanning: {
+    backgroundColor: 'rgba(0,212,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,212,255,0.4)',
+  },
+  badgeDot:     { width: 7, height: 7, borderRadius: 4 },
+  badgeDotRed:  { backgroundColor: C.red },
+  badgeDotCyan: { backgroundColor: C.cyan },
+  badgeText:    { color: C.textHigh, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+
+  // ── Scan line ──
   scanLine: {
     position: 'absolute',
-    left: 24,
-    right: 24,
+    left: 20,
+    right: 20,
     height: 2,
-    backgroundColor: '#F5A623',
-    shadowColor: '#F5A623',
+    backgroundColor: C.cyan,
+    shadowColor: C.cyan,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 10,
   },
 
-  // Corner brackets
+  // ── Corner brackets ──
   corner: {
     position: 'absolute',
-    width: 28,
-    height: 28,
-    borderColor: '#F5A623',
+    width: 26,
+    height: 26,
+    borderColor: C.cyan,
   },
-  cornerTL: { top: 60,                    left: 24,  borderTopWidth: 3,    borderLeftWidth: 3  },
-  cornerTR: { top: 60,                    right: 24, borderTopWidth: 3,    borderRightWidth: 3 },
-  cornerBL: { bottom: SCREEN_HEIGHT * 0.42, left: 24,  borderBottomWidth: 3, borderLeftWidth: 3  },
-  cornerBR: { bottom: SCREEN_HEIGHT * 0.42, right: 24, borderBottomWidth: 3, borderRightWidth: 3 },
+  cornerTL: { top: 100,                    left: 20,  borderTopWidth: 3,    borderLeftWidth: 3  },
+  cornerTR: { top: 100,                    right: 20, borderTopWidth: 3,    borderRightWidth: 3 },
+  cornerBL: { bottom: SCREEN_HEIGHT * 0.44, left: 20,  borderBottomWidth: 3, borderLeftWidth: 3  },
+  cornerBR: { bottom: SCREEN_HEIGHT * 0.44, right: 20, borderBottomWidth: 3, borderRightWidth: 3 },
 
-  // Scanning badge
-  scanningBadge: {
-    position: 'absolute',
-    top: 56,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    gap: 7,
-  },
-  scanDot:       { width: 8, height: 8, borderRadius: 4, backgroundColor: '#F5A623' },
-  scanBadgeText: { color: '#F5A623', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
-
-  // Listening badge
-  listeningBadge: {
-    position: 'absolute',
-    top: 56,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    gap: 7,
-  },
-  listeningDot:       { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF3B30' },
-  listeningBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
-
-  // Bottom overlay
-  bottomOverlay: {
+  // ── Bottom panel ──
+  bottomPanel: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingBottom: 36,
-    paddingTop: 24,
-    backgroundColor: 'rgba(0,0,0,0.72)',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    paddingTop: 22,
+    backgroundColor: C.overlay,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    borderTopWidth: 1,
+    borderColor: C.surfaceBorder,
+    shadowColor: C.primary,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 20,
   },
 
-  // Top bar
-  topBar: {
-    position: 'absolute',
-    top: -SCREEN_HEIGHT * 0.52,
-    left: 20,
+  // ── Status ──
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+    gap: 8,
   },
-  appName:    { color: '#fff', fontSize: 22, fontWeight: '800', letterSpacing: 3 },
-  appTagline: { color: 'rgba(255,255,255,0.5)', fontSize: 12, letterSpacing: 1, marginTop: 2 },
+  listeningRing: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: C.red,
+    opacity: 0.8,
+  },
+  statusText:      { color: C.textMid,  fontSize: 14, textAlign: 'center', letterSpacing: 0.2 },
+  statusListening: { color: C.red,      fontWeight: '700' },
+  statusScanning:  { color: C.cyan,     fontWeight: '700' },
+  statusPending:   { color: C.primary,  fontWeight: '700', fontSize: 15 },
 
-  // Status
-  statusText:      { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 4, letterSpacing: 0.3 },
-  statusListening: { color: '#F5A623', fontWeight: '700' },
-  statusScanning:  { color: '#F5A623', fontWeight: '700' },
-  statusPending:   { color: '#fff',    fontWeight: '600' },
-
-  // Recognized text
+  // ── Recognized text ──
   recognizedText: {
-    color: 'rgba(255,255,255,0.35)',
+    color: C.textLow,
     fontSize: 12,
     textAlign: 'center',
     fontStyle: 'italic',
-    marginBottom: 10,
+    marginBottom: 8,
   },
 
-  // Cart
+  // ── Divider ──
+  divider: {
+    height: 1,
+    backgroundColor: C.surfaceBorder,
+    marginVertical: 10,
+  },
+
+  // ── Cart ──
   cartHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    gap: 6,
+    paddingVertical: 6,
+    gap: 8,
   },
-  cartIcon:      { fontSize: 16 },
-  cartTitle:     { color: '#fff', fontSize: 15, fontWeight: '600', flex: 1 },
-  cartBadge:     { backgroundColor: '#F5A623', borderRadius: 10, minWidth: 22, height: 22, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
-  cartBadgeText: { color: '#000', fontSize: 12, fontWeight: '700' },
-  cartChevron:   { color: 'rgba(255,255,255,0.4)', fontSize: 14, marginLeft: 4 },
+  cartIcon:  { fontSize: 16 },
+  cartTitle: { color: C.textHigh, fontSize: 15, fontWeight: '700', flex: 1 },
+  cartBadge: {
+    backgroundColor: C.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 7,
+  },
+  cartBadgeText: { color: C.white, fontSize: 12, fontWeight: '800' },
+  cartChevron:   { color: C.textLow, fontSize: 14, marginLeft: 2 },
   cartBody:      { overflow: 'hidden' },
-  cartScroll:    { paddingLeft: 4 },
-  cartEmpty:     { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontStyle: 'italic', paddingVertical: 4 },
-  cartItem:      { color: 'rgba(255,255,255,0.85)', fontSize: 14, paddingVertical: 3 },
+  cartScroll:    { paddingLeft: 4, marginTop: 6 },
+  cartEmpty:     { color: C.textLow, fontSize: 13, fontStyle: 'italic', paddingVertical: 4 },
+  cartRow:       { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
+  cartDot:       { width: 7, height: 7, borderRadius: 4, backgroundColor: C.cyan },
+  cartItem:      { color: C.textHigh, fontSize: 14, fontWeight: '500' },
 
-  // Button
+  // ── Button ──
   button: {
     borderRadius: 50,
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#F5A623',
+    shadowColor: C.primary,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.35,
     shadowRadius: 16,
     elevation: 10,
   },
   buttonText: {
-    color: '#000',
+    color: C.white,
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '900',
     letterSpacing: 0.5,
   },
 });

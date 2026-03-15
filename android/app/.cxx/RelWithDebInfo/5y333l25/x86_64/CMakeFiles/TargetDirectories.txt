@@ -1,0 +1,9 @@
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/appmodules.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/CMakeFiles/rebuild_cache.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/RNHapticFeedbackSpec_autolinked_build/CMakeFiles/react_codegen_RNHapticFeedbackSpec.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/RNHapticFeedbackSpec_autolinked_build/CMakeFiles/edit_cache.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/RNHapticFeedbackSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/safeareacontext_autolinked_build/CMakeFiles/edit_cache.dir
+C:/Users/Valie/Hackathon/Clairvoyance/android/app/.cxx/RelWithDebInfo/5y333l25/x86_64/safeareacontext_autolinked_build/CMakeFiles/rebuild_cache.dir
