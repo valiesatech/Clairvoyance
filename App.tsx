@@ -15,7 +15,6 @@ import {
   ScrollView,
 } from 'react-native';
 import Tts from 'react-native-tts';
-
 const GROQ_API_KEY = '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';
 
 const { SpeechModule } = NativeModules;
