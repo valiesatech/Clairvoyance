@@ -26,17 +26,29 @@ class SpeechModule(private val reactContext: ReactApplicationContext) :
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
-                putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+                // Allow longer speech and more silence before stopping
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000)
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000)
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2000)
+                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             }
 
             speechRecognizer?.setRecognitionListener(object : RecognitionListener {
                 override fun onResults(results: Bundle?) {
                     val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    // Use the best match (first result)
                     val text = matches?.firstOrNull() ?: ""
-                    sendEvent("onSpeechResult", text)
+                    if (text.isNotEmpty()) {
+                        sendEvent("onSpeechResult", text)
+                    }
                 }
                 override fun onError(error: Int) {
-                    sendEvent("onSpeechError", "Error code: $error")
+                    // Only send error for critical failures
+                    if (error != SpeechRecognizer.ERROR_NO_MATCH &&
+                        error != SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
+                        sendEvent("onSpeechError", "Error code: $error")
+                    }
                 }
                 override fun onReadyForSpeech(params: Bundle?) {}
                 override fun onBeginningOfSpeech() {}
@@ -52,9 +64,15 @@ class SpeechModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun stopListening() {
+fun stopListening() {
+    try {
         speechRecognizer?.stopListening()
+        speechRecognizer?.destroy()
+        speechRecognizer = null
+    } catch (e: Exception) {
+        // ignore cleanup errors
     }
+}
 
     private fun sendEvent(eventName: String, data: String) {
         reactContext
